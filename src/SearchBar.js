@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SearchResults from './SearchResults';
 import Playlist from './Playlist';
+import styles from './SearchBar.module.css';
 
 
 export default function SearchBar() {
@@ -42,7 +43,11 @@ export default function SearchBar() {
     }
 
     const addToPlaylist = (song) => {
-        setPlaylist([...playlist, song])
+        const songExists = playlist.includes(song)
+        if(!songExists) {
+            setPlaylist([...playlist, song])
+        }
+        
     }
 
     const removeSong = (songToRemove) => {
@@ -55,13 +60,19 @@ export default function SearchBar() {
 
 
     return (
-        <div>
+        <div className={styles.background}>
+            <div className={styles.Orangesphere}></div>
+            <div className={styles.Pinksphere}></div>
+            <div className={styles.Bluesphere}></div>
+            <div className={styles.glassContainer}>
+            <h1 className={styles.h1}>Jammming</h1>    
             <form onSubmit={handleSubmit}>
             <input type="text" value={searchBar} onChange={handleChange} placeholder='Search by title or artist'></input>
-            <button type='submit'>Search</button>
+            <button type='submit' className={styles.button}>Search</button>
             </form>
             {filteredSongs.length > 0 && <SearchResults songs={filteredSongs} onAdd = {addToPlaylist}/>}
             <Playlist playlist = {playlist} playlistName = {playlistName} onRemove = {removeSong} onNameChange = {handleNameChange}/>
+            </div>
         </div>
     )
 };
