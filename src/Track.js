@@ -1,11 +1,16 @@
 import React from 'react';
+import styles from './Track.module.css';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+
 
 export default function Track( {song, onAdd, onRemove} ) {
    
     return (
-        <div>
+        <div className={styles.track}>
             <li>{song.title} by {song.artist}
-            {onAdd && <button onClick={() => onAdd(song)}>Add</button>}
+            {onAdd && <button onClick={() => onAdd(song)} className={styles.button}><FontAwesomeIcon icon={faPlus}/></button>}
             {onRemove && <button onClick = {() => onRemove(song)}>Remove</button>}
             </li> 
         </div>
