@@ -1,0 +1,25 @@
+.input {
+    font-size: 20px;
+    color: white;
+    padding: 10px 10px 10px 5px;
+    display: block;
+    width: 200px;
+    border: none;
+    border-bottom: 1px solid #ffffff;
+    background: transparent;
+   }
+
+   .button {
+    margin-top: 20px;
+    background-color: #360caa;
+    position:relative;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    border-radius:5px;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+}
+
