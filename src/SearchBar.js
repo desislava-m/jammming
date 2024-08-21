@@ -43,7 +43,9 @@ export default function SearchBar() {
     }
 
     const addToPlaylist = (song) => {
-        const songExists = playlist.includes(song)
+        const songExists = playlist.some(playlistSong => 
+            playlistSong.title === song.title && playlistSong.artist === song.artist
+        );
         if (!songExists) {
             setPlaylist([...playlist, song])
         }
