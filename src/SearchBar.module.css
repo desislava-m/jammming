@@ -17,15 +17,14 @@
 
 .resultsAndPlaylist {
     display: flex;
-    justify-content: space-around;
-    width: 100%;
-    gap: 20px; /* Add some space between the containers */
+    justify-content: center;
+    gap: 20px;
 }
 
 .blurContainer {
     flex: 1;
-    align-items: start;
-    padding: 50px;
+    align-items: flex-start;
+    padding: 10px 10px;
     margin: 10px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;

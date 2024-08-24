@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/node_modules-old
+spotify-access-token.js
 /.pnp
 .pnp.js
 

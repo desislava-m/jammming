@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SearchResults from './SearchResults';
 import Playlist from './Playlist';
 import styles from './SearchBar.module.css';
+import style from './SearchResults.module.css'
 
 
 export default function SearchBar() {
@@ -37,8 +38,10 @@ export default function SearchBar() {
             })
 
             setFilteredSongs(results)
-        } else {
+        } else if (searchBar.length === '') {
             setFilteredSongs(songs)
+        } else {
+            setFilteredSongs([]);
         };
     }
 
@@ -76,7 +79,8 @@ export default function SearchBar() {
                 </div>
                 <div className={styles.resultsAndPlaylist}>
                     <div>
-                        {filteredSongs.length > 0 && <SearchResults songs={filteredSongs} onAdd={addToPlaylist} />}
+                    {filteredSongs.length > 0 ? (<SearchResults songs={filteredSongs} onAdd={addToPlaylist} />) : 
+                    (<h2 className={style.h2}>No results found :(</h2>)}
                     </div>
                     <div>
                     {playlist.length > 0 && <Playlist playlist={playlist} playlistName={playlistName} onRemove={removeSong} onNameChange={handleNameChange} />}
