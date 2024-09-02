@@ -9,7 +9,7 @@ export default function Track( {song, onAdd, onRemove} ) {
    
     return (
         <div className={styles.track}>
-            <li>{song.title} by {song.artist}
+            <li>{song.name} by {song.artist}
             {onAdd && <button onClick={() => onAdd(song)} className={styles.button}><FontAwesomeIcon icon={faPlus}/></button>}
             {onRemove && <button onClick = {() => onRemove(song)} className={styles.button}><FontAwesomeIcon icon={faMinus}/></button>}
             </li> 

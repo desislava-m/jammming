@@ -3,24 +3,56 @@ import SearchResults from './SearchResults';
 import Playlist from './Playlist';
 import styles from './SearchBar.module.css';
 import style from './SearchResults.module.css'
+import getSpotifyAccessToken from './spotify-access-token';
 
 
 export default function SearchBar() {
 
     const [searchBar, setSearchBar] = useState('')
-    const [filteredSongs, setFilteredSongs] = useState([])
     const [playlist, setPlaylist] = useState([])
     const [playlistName, setPlaylistName] = useState('')
+    const [filteredSongs, setFilteredSongs] = useState([]);
+    const [errorMessage, setErrorMessage] = useState('')
 
-    const songs = [
 
-        { title: "Bad Blood", artist: "Taylor Swift" },
-        { title: "Positions", artist: "Ariana Grande" },
-        { title: "Cinderella Man", artist: "Eminem" },
-        { title: "Summertime Sandness", artist: "Lana Del Rey" },
-        { title: "Toxic", artist: "Britney Spears" }
+    // const songs = [
 
-    ];
+    //     { title: "Bad Blood", artist: "Taylor Swift" },
+    //     { title: "Positions", artist: "Ariana Grande" },
+    //     { title: "Cinderella Man", artist: "Eminem" },
+    //     { title: "Summertime Sandness", artist: "Lana Del Rey" },
+    //     { title: "Toxic", artist: "Britney Spears" }
+
+    // ];
+    
+
+    const fetchTracks = async (searchTerm) => {
+        const accessToken = await getSpotifyAccessToken();
+
+        const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${searchTerm}`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.tracks && data.tracks.items) {
+            const trackData = data.tracks.items.map(track => ({
+                id: track.id,
+                name: track.name,
+                artist: track.artists[0].name,
+                album: track.album.name
+            }));
+
+            setFilteredSongs(trackData); // Store tracks in state
+            setErrorMessage('')
+        } else {
+            setErrorMessage('No results found :(')
+        }
+
+    };
+
 
     const handleChange = (event) => {
         event.preventDefault()
@@ -32,18 +64,18 @@ export default function SearchBar() {
         event.preventDefault()
 
         if (searchBar.length > 0) {
-            const results = songs.filter((song) => {
-                return song.title.toLowerCase().match(searchBar.toLowerCase()) ||
-                    song.artist.toLowerCase().match(searchBar.toLowerCase());
-            })
-            if(results.length === 0) {
-                setFilteredSongs('No results found')
-            } else {
-                setFilteredSongs(results)
-            }
-            
-        } else  {
-            setFilteredSongs(songs)
+            // const results = songs.filter((song) => {
+            //     return song.title.toLowerCase().match(searchBar.toLowerCase()) ||
+            //         song.artist.toLowerCase().match(searchBar.toLowerCase());
+            // })
+            // if(results.length === 0) {
+            //     setFilteredSongs('No results found')
+            // } else {
+            //     setFilteredSongs(results)
+            // }
+
+            fetchTracks(searchBar)
+
         } 
     }
 
@@ -65,7 +97,6 @@ export default function SearchBar() {
         setPlaylistName(event.target.value)
     }
 
-
     return (
         <div>
             <div className={styles.Orangesphere}></div>
@@ -81,8 +112,8 @@ export default function SearchBar() {
                 </div>
                 <div className={styles.resultsAndPlaylist}>
                     <div>
-                        {filteredSongs === 'No results found' ? (
-                            <h2 className={style.h2}>No results found :(</h2>
+                        {errorMessage !== '' ? (
+                            <h2 className={style.h2}>{errorMessage}</h2>
                         ) : (
                             filteredSongs.length > 0 && (
                                 <SearchResults songs={filteredSongs} onAdd={addToPlaylist} />
@@ -97,3 +128,5 @@ export default function SearchBar() {
         </div>
     )
 };
+
+
