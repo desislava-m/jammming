@@ -6,6 +6,7 @@ import style from './SearchResults.module.css'
 import getSpotifyAccessToken from './spotify-access-token';
 
 
+
 export default function SearchBar() {
 
     const [searchBar, setSearchBar] = useState('')
@@ -24,7 +25,7 @@ export default function SearchBar() {
     //     { title: "Toxic", artist: "Britney Spears" }
 
     // ];
-    
+
 
     const fetchTracks = async (searchTerm) => {
         const accessToken = await getSpotifyAccessToken();
@@ -42,7 +43,8 @@ export default function SearchBar() {
                 id: track.id,
                 name: track.name,
                 artist: track.artists[0].name,
-                album: track.album.name
+                album: track.album.name,
+                uri: track.uri
             }));
 
             setFilteredSongs(trackData); // Store tracks in state
@@ -76,17 +78,17 @@ export default function SearchBar() {
 
             fetchTracks(searchBar)
 
-        } 
+        }
     }
 
     const addToPlaylist = (song) => {
         const songExists = playlist.some(playlistSong =>
-            playlistSong.title === song.title && playlistSong.artist === song.artist
+            playlistSong.name === song.name && playlistSong.artist === song.artist
         );
         if (!songExists) {
-            setPlaylist([...playlist, song])
+            setPlaylist(prevPlaylist => [...prevPlaylist, song]);
         }
-
+        console.log('Current Playlist:', playlist);
     }
 
     const removeSong = (songToRemove) => {
@@ -96,6 +98,103 @@ export default function SearchBar() {
     const handleNameChange = (event) => {
         setPlaylistName(event.target.value)
     }
+    //Get uris MOCKUP
+    // const savePlaylist = () => {
+    //     const trackUris = playlist.map(song => song.uri);
+    //     console.log('Saving playlist:', trackUris);
+    // };
+
+    //Save playlist to Spotify
+
+    const getUserId = async (accessToken) => {
+        
+        try {
+            console.log(accessToken)
+            const response = await fetch('https://api.spotify.com/v1/me', {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`
+                }
+              });
+            
+              const data = await response.json();
+              console.log(data)
+              return data.id; // Returns the user's Spotify ID
+              
+        }
+        catch(error) {
+            console.error('Error getting ID', error);
+        }
+      };
+
+
+      // Creating the playlist in Spotify
+
+      const createSpotifyPlaylist = async (userId, playlistName, accessToken) => {
+        try {
+            const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  name: playlistName,
+                  description: 'Playlist created from my app',
+                  public: false // Set to false if you want the playlist to be private
+                })
+              });
+            
+              const data = await response.json();
+              return data.id; // Returns the new playlist ID
+        }
+        catch(error) {
+            console.error('Error creating Spotify playlist', error)
+        }
+
+      };
+
+
+      //Add songs to playlist in Spotify
+        
+      const addTracksToPlaylist = async (playlistId, trackUris, accessToken) => {
+        try {
+            await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  uris: trackUris // Array of track URIs to add to the playlist
+                })
+              });
+        }
+        catch(error) {
+            console.error('Error adding songs', error)
+        }
+      };
+      
+
+      // Save the playlist in Spotify
+
+      const savePlaylist = async (playlistName, playlist) => {
+        try {
+          const accessToken = await getSpotifyAccessToken();
+          console.log(accessToken) // Fetch or generate access token
+          const userId = await getUserId(accessToken); // Fetch the user’s ID
+          const playlistId = await createSpotifyPlaylist(userId, playlistName, accessToken); // Create a new playlist
+                                         
+          const trackUris = playlist.map(song => song.uri); // Map the tracks to their URIs
+          await addTracksToPlaylist(playlistId, trackUris, accessToken); // Add tracks to the playlist
+      
+          console.log('Playlist saved successfully!');
+        } catch (error) {
+          console.error('Error saving playlist:', error);
+        }
+      };
+      
+      
+
 
     return (
         <div>
@@ -121,7 +220,8 @@ export default function SearchBar() {
                         )}
                     </div>
                     <div>
-                        {playlist.length > 0 && <Playlist playlist={playlist} playlistName={playlistName} onRemove={removeSong} onNameChange={handleNameChange} />}
+                        {playlist.length > 0 && <Playlist playlist={playlist} playlistName={playlistName} onRemove={removeSong} onNameChange={handleNameChange} savePlaylist={() => savePlaylist(playlistName, playlist)} />}
+
                     </div>
                 </div>
             </div>
