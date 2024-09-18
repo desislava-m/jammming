@@ -4,6 +4,8 @@ import Playlist from './Playlist';
 import styles from './SearchBar.module.css';
 import style from './SearchResults.module.css'
 import getSpotifyAccessToken from './spotify-access-token';
+import { client_id, client_secret } from "./credentials";
+import { redirectToSpotifyLogin, Callback } from './spotifyLogin';
 
 
 
@@ -15,20 +17,10 @@ export default function SearchBar() {
     const [filteredSongs, setFilteredSongs] = useState([]);
     const [errorMessage, setErrorMessage] = useState('')
 
-
-    // const songs = [
-
-    //     { title: "Bad Blood", artist: "Taylor Swift" },
-    //     { title: "Positions", artist: "Ariana Grande" },
-    //     { title: "Cinderella Man", artist: "Eminem" },
-    //     { title: "Summertime Sandness", artist: "Lana Del Rey" },
-    //     { title: "Toxic", artist: "Britney Spears" }
-
-    // ];
-
+    
 
     const fetchTracks = async (searchTerm) => {
-        const accessToken = await getSpotifyAccessToken();
+        const accessToken = await getSpotifyAccessToken(client_id, client_secret);
 
         const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${searchTerm}`, {
             headers: {
@@ -66,15 +58,6 @@ export default function SearchBar() {
         event.preventDefault()
 
         if (searchBar.length > 0) {
-            // const results = songs.filter((song) => {
-            //     return song.title.toLowerCase().match(searchBar.toLowerCase()) ||
-            //         song.artist.toLowerCase().match(searchBar.toLowerCase());
-            // })
-            // if(results.length === 0) {
-            //     setFilteredSongs('No results found')
-            // } else {
-            //     setFilteredSongs(results)
-            // }
 
             fetchTracks(searchBar)
 
@@ -109,7 +92,6 @@ export default function SearchBar() {
     const getUserId = async (accessToken) => {
         
         try {
-            console.log(accessToken)
             const response = await fetch('https://api.spotify.com/v1/me', {
                 headers: {
                   'Authorization': `Bearer ${accessToken}`
@@ -119,7 +101,6 @@ export default function SearchBar() {
               const data = await response.json();
               console.log(data)
               return data.id; // Returns the user's Spotify ID
-              
         }
         catch(error) {
             console.error('Error getting ID', error);
@@ -179,8 +160,15 @@ export default function SearchBar() {
 
       const savePlaylist = async (playlistName, playlist) => {
         try {
-          const accessToken = await getSpotifyAccessToken();
-          console.log(accessToken) // Fetch or generate access token
+          const accessToken = localStorage.getItem('spotifyAccessToken');
+
+          if (!accessToken) {
+            // No access token found, redirect to Spotify login to obtain one
+            redirectToSpotifyLogin();
+            return; // Exit the function after the redirect, will continue after user returns
+          }
+
+          
           const userId = await getUserId(accessToken); // Fetch the user’s ID
           const playlistId = await createSpotifyPlaylist(userId, playlistName, accessToken); // Create a new playlist
                                          
@@ -220,8 +208,16 @@ export default function SearchBar() {
                         )}
                     </div>
                     <div>
-                        {playlist.length > 0 && <Playlist playlist={playlist} playlistName={playlistName} onRemove={removeSong} onNameChange={handleNameChange} savePlaylist={() => savePlaylist(playlistName, playlist)} />}
-
+                        {
+                            playlist.length > 0 &&
+                                <Playlist playlist={playlist}
+                                        playlistName={playlistName}
+                                        onRemove={removeSong}
+                                        onNameChange={handleNameChange}
+                                        savePlaylist={() => savePlaylist(playlistName, playlist)}
+                                        
+                                />
+                        }
                     </div>
                 </div>
             </div>
